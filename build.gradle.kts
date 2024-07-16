@@ -49,6 +49,8 @@ dependencies {
 	testImplementation("org.testcontainers:junit-jupiter")
 	testImplementation("org.testcontainers:mysql")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	implementation("org.hibernate:hibernate-core:7.0.0.Alpha3")
+
 }
 
 dependencyManagement {
