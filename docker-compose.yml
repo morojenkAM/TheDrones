@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  mysqldb:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: afara_ninge_linistit
+      MYSQL_DATABASE: drones
+    ports:
+      - "3306"
