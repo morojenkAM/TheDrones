@@ -1,4 +1,4 @@
-package ro.developmentfactory.thedrones;
+package ro.developmentfactory.thedrones.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

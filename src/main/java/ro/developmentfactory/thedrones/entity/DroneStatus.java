@@ -29,8 +29,8 @@ public class DroneStatus {
     @Column(name = "facing_direction")
     private Direction facingDirection;
 
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) // Add this annotation to ignore Hibernate proxies
-    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_drone")
     private Drone drone;
 }
