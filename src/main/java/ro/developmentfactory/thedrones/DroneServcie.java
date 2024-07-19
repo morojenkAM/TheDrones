@@ -1,4 +1,4 @@
-package ro.developmentfactory.thedrones.service;
+package ro.developmentfactory.thedrones;
 
 import ro.developmentfactory.thedrones.entity.Drone;
 import java.util.List;

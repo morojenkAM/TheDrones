@@ -1,9 +1,8 @@
-package ro.developmentfactory.thedrones.service;
+package ro.developmentfactory.thedrones;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ro.developmentfactory.thedrones.entity.Drone;
-import ro.developmentfactory.thedrones.entity.DroneStatus;
 import ro.developmentfactory.thedrones.repository.DroneRepository;
 
 import java.sql.Timestamp;

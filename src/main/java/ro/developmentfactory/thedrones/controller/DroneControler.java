@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ro.developmentfactory.thedrones.entity.Drone;
-import ro.developmentfactory.thedrones.service.DroneServcie;
+import ro.developmentfactory.thedrones.DroneServcie;
 
 import java.util.List;
 
