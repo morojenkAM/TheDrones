@@ -1,0 +1,191 @@
+-POST
+
+URL
+http://localhost:8081/drones
+
+Input
+{
+    "name": "Drone1",
+    "countMove": 0,
+    "createdAt": "2024-07-18T00:00:00",
+    "updatedAt": "2024-07-18T00:00:00"
+}
+Output
+{
+    "idDrone": 302,
+    "name": "Drone1",
+    "countMove": 0,
+    "createdAt": "2024-07-19T10:28:03.551+00:00",
+    "updatedAt": "2024-07-19T10:28:03.551+00:00"
+}
+
+URL
+http://localhost:8081/dronesStatus
+
+Input
+{
+    "currentPositionX": 5,
+    "currentPositionY": 10,
+    "facingDirection": "N",
+    "drone": {
+        "idDrone": 1
+    }
+}
+
+Output
+{
+    "idDroneStatus": 152,
+    "currentPositionX": 5,
+    "currentPositionY": 10,
+    "facingDirection": "N",
+    "drone": {
+        "idDrone": 1,
+        "name": "Drone1 Updated",
+        "countMove": 10,
+        "createdAt": "2024-07-18T11:37:44.000+00:00",
+        "updatedAt": "2024-07-19T10:32:41.000+00:00"
+    }
+}
+
+-GET
+
+URL
+http://localhost:8081/drones
+
+Output
+[
+    {
+        "idDrone": 1,
+        "name": "Drone 2",
+        "countMove": 1,
+        "createdAt": "2024-07-18T11:37:44.000+00:00",
+        "updatedAt": "2024-07-18T12:03:14.000+00:00"
+    },
+    {
+        "idDrone": 252,
+        "name": "Drone 3",
+        "countMove": 4,
+        "createdAt": "2024-07-18T12:40:08.000+00:00",
+        "updatedAt": "2024-07-18T12:40:08.000+00:00"
+    },
+    {
+        "idDrone": 302,
+        "name": "Drone1",
+        "countMove": 0,
+        "createdAt": "2024-07-19T10:28:04.000+00:00",
+        "updatedAt": "2024-07-19T10:28:04.000+00:00"
+    }
+]
+
+URL
+http://localhost:8081/dronesStatus
+
+Output
+[
+    {
+        "idDroneStatus": 1,
+        "currentPositionX": 10,
+        "currentPositionY": 20,
+        "facingDirection": "N",
+        "drone": {
+            "idDrone": 1,
+            "name": "Drone1 Updated",
+            "countMove": 10,
+            "createdAt": "2024-07-18T11:37:44.000+00:00",
+            "updatedAt": "2024-07-19T10:32:41.000+00:00"
+        }
+    },
+    {
+        "idDroneStatus": 105,
+        "currentPositionX": 5,
+        "currentPositionY": 10,
+        "facingDirection": "N",
+        "drone": {
+            "idDrone": 1,
+            "name": "Drone1 Updated",
+            "countMove": 10,
+            "createdAt": "2024-07-18T11:37:44.000+00:00",
+            "updatedAt": "2024-07-19T10:32:41.000+00:00"
+        }
+    },
+    {
+        "idDroneStatus": 152,
+        "currentPositionX": 5,
+        "currentPositionY": 10,
+        "facingDirection": "N",
+        "drone": {
+            "idDrone": 1,
+            "name": "Drone1 Updated",
+            "countMove": 10,
+            "createdAt": "2024-07-18T11:37:44.000+00:00",
+            "updatedAt": "2024-07-19T10:32:41.000+00:00"
+        }
+    }
+]
+
+
+-PUT
+
+URL
+http://localhost:8081/drones/1
+
+Input
+{
+    "name": "Drone1 Updated",
+    "countMove": 10,
+    "createdAt": "2024-07-18T00:00:00",
+    "updatedAt": "2024-07-18T00:00:00"
+}
+
+Output
+{
+    "idDrone": 1,
+    "name": "Drone1 Updated",
+    "countMove": 10,
+    "createdAt": "2024-07-18T11:37:44.000+00:00",
+    "updatedAt": "2024-07-19T10:32:40.896+00:00"
+}
+
+URL
+http://localhost:8081/dronesStatus/1
+
+Input
+{
+    "currentPositionX": 10,
+    "currentPositionY": 20,
+    "facingDirection": "N",
+    "drone": {
+        "idDrone": 1
+    }
+}
+
+Output
+{
+    "idDroneStatus": 1,
+    "currentPositionX": 10,
+    "currentPositionY": 20,
+    "facingDirection": "N",
+    "drone": {
+        "idDrone": 1,
+        "name": "Drone1 Updated",
+        "countMove": 10,
+        "createdAt": "2024-07-18T11:37:44.000+00:00",
+        "updatedAt": "2024-07-19T10:32:41.000+00:00"
+    }
+}
+
+
+-DELETE
+
+URL
+http://localhost:8081/drones/252
+
+Output
+Drone deleted
+
+URL
+http://localhost:8081/dronesStatus/152
+
+Output
+DroneStatus deleted
+
