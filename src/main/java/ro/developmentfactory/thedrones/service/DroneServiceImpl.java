@@ -1,54 +1,98 @@
 package ro.developmentfactory.thedrones.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
+import ro.developmentfactory.thedrones.dto.DroneRequest;
+import ro.developmentfactory.thedrones.dto.DroneResponse;
+import ro.developmentfactory.thedrones.entity.Direction;
 import ro.developmentfactory.thedrones.entity.Drone;
+import ro.developmentfactory.thedrones.entity.DroneStatus;
 import ro.developmentfactory.thedrones.repository.DroneRepository;
-
-import java.sql.Timestamp;
-import java.sql.Date;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @Service
-public class DroneServiceImpl implements DroneServcie {
+public class DroneServiceImpl implements DroneService {
 
-    @Autowired
-    private DroneRepository droneRepository;
-    private DroneStatusService droneStatusService;
+    private final DroneRepository droneRepository;
+    private final DroneStatusService droneStatusService;
+
+    public DroneServiceImpl(DroneRepository droneRepository, DroneStatusService droneStatusService) {
+        this.droneRepository = droneRepository;
+        this.droneStatusService = droneStatusService;
+    }
 
     //Read operation
-    @Override public List<Drone> fetchDroneList(){
+    @Override
+    public List<Drone> fetchDroneList(){
         return (List<Drone>) droneRepository.findAll();
     }
 
     @Override
-    public Drone saveDrone(Drone drone) {
-        Timestamp currentTime = new Timestamp(System.currentTimeMillis());
-        drone.setCreatedAt(currentTime);
-        drone.setUpdatedAt(currentTime);
-        return droneRepository.save(drone);
+    public DroneResponse saveDrone(DroneRequest droneRequest) {
+        OffsetDateTime currentTime = OffsetDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
+        Drone drone = Drone.builder()
+                .name(droneRequest.getName())
+                .countMove(droneRequest.getCountMove())
+                .createdAt(currentTime)
+                .updatedAt(currentTime)
+                .build();
+
+        Drone savedDrone = droneRepository.save(drone);
+
+        DroneStatus droneStatus = DroneStatus.builder()
+                .drone(savedDrone)
+                .currentPositionX(0)
+                .currentPositionY(0)
+                .facingDirection(Direction.N)
+                .build();
+        droneStatusService.saveDroneStatus(droneStatus);
+        return convertToResponse(savedDrone);
     }
 
     @Override
-    public Drone updateDrone(Drone drone, Long droneID) {
-        Drone droneDB = droneRepository.findById(droneID).get();
+    public DroneResponse updateNameDrone(DroneRequest droneRequest, UUID idDrone){
+        Drone droneDB = droneRepository.findById(idDrone).orElseThrow(() ->
+        new EntityNotFoundException("Drone with id not found"));
 
-        if (Objects.nonNull(drone.getName()) && !"".equalsIgnoreCase(drone.getName())) {
-            droneDB.setName(drone.getName());
+        if (Objects.nonNull(droneRequest.getName()) && !"".equalsIgnoreCase(droneRequest.getName())) {
+            droneDB.setName(droneRequest.getName());
         }
-        if (Objects.nonNull(drone.getCountMove())) {
-            droneDB.setCountMove(drone.getCountMove());
-        }
-        Date date = new Date(System.currentTimeMillis());
-        droneDB.setUpdatedAt(new Timestamp(date.getTime()));
-
-        return droneRepository.save(droneDB);
+        OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
+        droneDB.setUpdatedAt(now);
+        Drone updatedDrone = droneRepository.save(droneDB);
+        return convertToResponse(updatedDrone);
     }
 
     @Override
-    public void deleteDrone(Long droneId) {
-        droneRepository.deleteById(droneId);
+    public DroneResponse updateCountMove(UUID idDrone, int newCountMove) {
+        Drone droneDB = droneRepository.findById(idDrone).orElseThrow(() ->
+                new EntityNotFoundException("Drone with id not found"));
+
+        droneDB.setCountMove(newCountMove);
+        Drone updatedDrone = droneRepository.save(droneDB);
+        return convertToResponse(updatedDrone);
     }
 
+    @Override
+    public void deleteDrone(UUID idDrone) {
+        if (!droneRepository.existsById(idDrone)) {
+            throw new EntityNotFoundException("Drone with id not found");
+        }
+        droneRepository.deleteById(idDrone);
+    }
+
+    private DroneResponse convertToResponse(Drone drone){
+        return DroneResponse.builder()
+                .idDrone(drone.getIdDrone())
+                .name(drone.getName())
+                .countMove(drone.getCountMove())
+                .createdAt(drone.getCreatedAt())
+                .updatedAt(drone.getUpdatedAt())
+                .build();
+    }
 }

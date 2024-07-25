@@ -6,8 +6,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.sql.Timestamp;
+import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -15,20 +16,23 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 
-public class Drone {
+public class Drone{
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id_drone")
-    private Long idDrone;
+    private UUID idDrone;
 
     @Column(name = "name")
     private String name;
+
     @Column(name = "count_move")
     private int countMove;
-    @Column(name = "created_at")
-    private Timestamp createdAt;
-    @Column(name = "updated_at")
-    private Timestamp updatedAt;
+
+    @Column(name = "created_at", columnDefinition = "TIMESTAMP")
+    private OffsetDateTime createdAt;
+
+    @Column(name = "updated_at",columnDefinition =  "TIMESTAMP")
+    private OffsetDateTime updatedAt;
 
     @JsonBackReference // Add this annotation to prevent infinite recursion
     @OneToMany(mappedBy = "drone", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

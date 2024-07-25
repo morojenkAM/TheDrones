@@ -1,19 +1,14 @@
 package ro.developmentfactory.thedrones.service;
 
 import ro.developmentfactory.thedrones.entity.DroneStatus;
-
-import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 public interface DroneStatusService {
     //Read operation
-    List<DroneStatus> fetchDroneStatusList();
+    Optional<DroneStatus> fetchDroneStatus(UUID idDrone);
 
     //Save operation
-    DroneStatus saveDroneStatus(DroneStatus droneStatus);
+    void saveDroneStatus(DroneStatus droneStatus);
 
-    //Update operation
-    DroneStatus updateDroneStatus(DroneStatus droneStatus,Long idDroneStatus);
-
-    //Delete operation
-    void deleteDroneStatusById(Long idDroneStatus);
 }
