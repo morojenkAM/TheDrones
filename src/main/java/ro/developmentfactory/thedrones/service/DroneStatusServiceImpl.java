@@ -40,4 +40,5 @@ public class DroneStatusServiceImpl implements DroneStatusService {
         droneStatusRepository.save(droneStatus);
     }
 
+
 }

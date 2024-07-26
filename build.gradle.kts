@@ -48,6 +48,11 @@ dependencies {
 	testImplementation("org.testcontainers:junit-jupiter")
 	testImplementation("org.testcontainers:mysql")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	implementation ("org.springframework.boot:spring-boot-starter-validation")
+	implementation ("org.springframework.boot:spring-boot-starter-logging")
+	testImplementation ("org.springframework.boot:spring-boot-starter-test")
+	testImplementation ("org.mockito:mockito-core")
+	testImplementation ("org.mockito:mockito-junit-jupiter")
 }
 
 dependencyManagement {
@@ -68,3 +73,4 @@ tasks.asciidoctor {
 	inputs.dir(project.extra["snippetsDir"]!!)
 	dependsOn(tasks.test)
 }
+

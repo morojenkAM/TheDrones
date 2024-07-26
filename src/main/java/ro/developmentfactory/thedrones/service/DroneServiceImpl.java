@@ -1,5 +1,7 @@
 package ro.developmentfactory.thedrones.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import ro.developmentfactory.thedrones.dto.DroneRequest;
@@ -8,6 +10,7 @@ import ro.developmentfactory.thedrones.entity.Direction;
 import ro.developmentfactory.thedrones.entity.Drone;
 import ro.developmentfactory.thedrones.entity.DroneStatus;
 import ro.developmentfactory.thedrones.repository.DroneRepository;
+
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -17,6 +20,7 @@ import java.util.UUID;
 
 @Service
 public class DroneServiceImpl implements DroneService {
+    private static final Logger log = LoggerFactory.getLogger(DroneServiceImpl.class);
 
     private final DroneRepository droneRepository;
     private final DroneStatusService droneStatusService;
@@ -51,6 +55,7 @@ public class DroneServiceImpl implements DroneService {
                 .facingDirection(Direction.N)
                 .build();
         droneStatusService.saveDroneStatus(droneStatus);
+        log.info("Drone saved with ID: {} ",savedDrone.getIdDrone());
         return convertToResponse(savedDrone);
     }
 
@@ -65,6 +70,7 @@ public class DroneServiceImpl implements DroneService {
         OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
         droneDB.setUpdatedAt(now);
         Drone updatedDrone = droneRepository.save(droneDB);
+        log.info("Drone with ID: {} updated", idDrone);
         return convertToResponse(updatedDrone);
     }
 
@@ -75,6 +81,7 @@ public class DroneServiceImpl implements DroneService {
 
         droneDB.setCountMove(newCountMove);
         Drone updatedDrone = droneRepository.save(droneDB);
+        log.info("Drone with ID: {} updated countMove to {}", idDrone, newCountMove);
         return convertToResponse(updatedDrone);
     }
 
@@ -84,6 +91,8 @@ public class DroneServiceImpl implements DroneService {
             throw new EntityNotFoundException("Drone with id not found");
         }
         droneRepository.deleteById(idDrone);
+        log.info("Drone with ID: {} deleted", idDrone);
+
     }
 
     private DroneResponse convertToResponse(Drone drone){
@@ -95,4 +104,5 @@ public class DroneServiceImpl implements DroneService {
                 .updatedAt(drone.getUpdatedAt())
                 .build();
     }
+
 }

@@ -17,7 +17,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class DroneStatusServiceImplTest {
+class DronesStatusServiceImplTest {
 
     @Mock
     private DroneStatusRepository droneStatusRepository;
@@ -34,7 +34,7 @@ class DroneStatusServiceImplTest {
     }
 
     @Test
-    @DisplayName("fetchDroneStatus_WhenIdExists_ReturnsDroneStatus")
+    @DisplayName("Fetch drone status should return DroneStatus when ID exists")
     void fetchDroneStatus_WhenIdExists_ReturnsDroneStatus() {
         // Given
         UUID droneId = UUID.randomUUID();
@@ -51,7 +51,7 @@ class DroneStatusServiceImplTest {
     }
 
     @Test
-    @DisplayName("fetchDroneStatus_WhenIdDoesNotExist_ReturnsEmpty")
+    @DisplayName("Fetch drone status should return empty when ID does not exist")
     void fetchDroneStatus_WhenIdDoesNotExist_ReturnsEmpty() {
         // Given
         UUID droneId = UUID.randomUUID();
@@ -65,7 +65,7 @@ class DroneStatusServiceImplTest {
     }
 
     @Test
-    @DisplayName("saveDroneStatus_WhenDroneExists_SavesDroneStatus")
+    @DisplayName("Save drone status should save when drone exists")
     void saveDroneStatus_WhenDroneExists_SavesDroneStatus() {
         // Given
         UUID droneId = UUID.randomUUID();
@@ -85,7 +85,7 @@ class DroneStatusServiceImplTest {
     }
 
     @Test
-    @DisplayName("saveDroneStatus_WhenDroneDoesNotExist_ThrowsException")
+    @DisplayName("Save drone status should throw exception if drone does not exist")
     void saveDroneStatus_WhenDroneDoesNotExist_ThrowsException() {
         // Given
         UUID droneId = UUID.randomUUID();
@@ -105,7 +105,7 @@ class DroneStatusServiceImplTest {
     }
 
     @Test
-    @DisplayName("saveDroneStatus_WhenDroneIsNull_SavesDroneStatusWithoutDrone")
+    @DisplayName("Save drone status when drone is null should still save the status")
     void saveDroneStatus_WhenDroneIsNull_SavesDroneStatusWithoutDrone() {
         // Given
         DroneStatus droneStatus = new DroneStatus();
@@ -117,7 +117,7 @@ class DroneStatusServiceImplTest {
         verify(droneStatusRepository, times(1)).save(droneStatus);
     }
     @Test
-    @DisplayName("saveDroneStatus_WhenDroneStatusHasNullDrone_SavesDroneStatus")
+    @DisplayName("Save drone status when drone is null should save the status")
     void saveDroneStatus_WhenDroneStatusHasNullDrone_SavesDroneStatus() {
         // Given
         DroneStatus droneStatus = new DroneStatus();
@@ -130,6 +130,72 @@ class DroneStatusServiceImplTest {
         verify(droneStatusRepository, times(1)).save(droneStatus);
     }
 
+
+    @Test
+    @DisplayName("Update drone status when it exists should update the status")
+    void updateDroneStatus_WhenDroneStatusExists_UpdatesDroneStatus() {
+        // Given
+        UUID droneId = UUID.randomUUID();
+        Drone drone = new Drone();
+        drone.setIdDrone(droneId);
+
+        DroneStatus existingDroneStatus = new DroneStatus();
+        existingDroneStatus.setIdDroneStatus(droneId);
+        existingDroneStatus.setDrone(drone);
+        existingDroneStatus.setCurrentPositionX(1);
+
+        DroneStatus updatedDroneStatus = new DroneStatus();
+        updatedDroneStatus.setIdDroneStatus(droneId);
+        updatedDroneStatus.setDrone(drone);
+        updatedDroneStatus.setCurrentPositionX(2);
+
+        when(droneStatusRepository.findById(droneId)).thenReturn(Optional.of(existingDroneStatus));
+        when(droneRepository.findById(droneId)).thenReturn(Optional.of(drone));
+
+        // When
+        droneStatusService.saveDroneStatus(updatedDroneStatus);
+
+        // Then
+        verify(droneStatusRepository, times(1)).save(updatedDroneStatus);
+        assertEquals(2, updatedDroneStatus.getCurrentPositionX(), "DroneStatus position should be updated");
+    }
+
+
+    @Test
+    @DisplayName("Save drone status when repository throws exception should handle it gracefully")
+    void saveDroneStatus_WhenRepositoryThrowsException_HandlesGracefully() {
+        // Given
+        DroneStatus droneStatus = new DroneStatus();
+        UUID droneId = UUID.randomUUID();
+        Drone drone = new Drone();
+        drone.setIdDrone(droneId);
+        droneStatus.setDrone(drone);
+
+        when(droneRepository.findById(droneId)).thenReturn(Optional.of(drone));
+        doThrow(new RuntimeException("Database error")).when(droneStatusRepository).save(droneStatus);
+
+        // When & Then
+        RuntimeException thrown = assertThrows(
+                RuntimeException.class,
+                () -> droneStatusService.saveDroneStatus(droneStatus),
+                "Expected saveDroneStatus() to throw RuntimeException due to database error"
+        );
+        assertEquals("Database error", thrown.getMessage());
+    }
+
+    @Test
+    @DisplayName("Fetch drone status when repository returns empty should return empty optional")
+    void fetchDroneStatus_WhenRepositoryReturnsEmpty_HandlesGracefully() {
+        // Given
+        UUID droneId = UUID.randomUUID();
+        when(droneStatusRepository.findById(droneId)).thenReturn(Optional.empty());
+
+        // When
+        Optional<DroneStatus> actualDroneStatus = droneStatusService.fetchDroneStatus(droneId);
+
+        // Then
+        assertFalse(actualDroneStatus.isPresent(), "DroneStatus should not be present");
+    }
 
 
 

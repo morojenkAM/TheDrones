@@ -272,4 +272,55 @@ public class DroneServiceImplTest {
         verify(droneRepository).findById(droneId);
         verify(droneRepository).save(any(Drone.class));
     }
+    @Test
+    @DisplayName("Given a DroneRequest with negative countMove, when saveDrone is called, then throw IllegalArgumentException")
+    void givenDroneRequestWithNegativeCountMove_whenSaveDrone_thenThrowIllegalArgumentException() {
+        // Given
+        DroneRequest droneRequest = new DroneRequest("Drone1", -5);
+
+        // When & Then
+        assertThrows(NullPointerException.class, () -> droneService.saveDrone(droneRequest));
+    }
+    @Test
+    @DisplayName("Given a non-empty list of drones, when fetchDroneList is called, then return the list of drones")
+    void givenNonEmptyDroneList_whenFetchDroneList_thenReturnNonEmptyDroneList() {
+        // Given
+        Drone drone1 = new Drone();
+        Drone drone2 = new Drone();
+        List<Drone> droneList = List.of(drone1, drone2);
+        when(droneRepository.findAll()).thenReturn(droneList);
+
+        // When
+        List<Drone> result = droneService.fetchDroneList();
+
+        // Then
+        assertFalse(result.isEmpty());
+        assertEquals(2, result.size());
+        verify(droneRepository).findAll();
+    }
+    @Test
+    @DisplayName("Given a Drone with existing name, when updateNameDrone is called with the same name, then updatedAt should be refreshed")
+    void givenDroneWithExistingName_whenUpdateNameDrone_thenUpdatedAtShouldBeRefreshed() {
+        // Given
+        UUID droneId = UUID.randomUUID();
+        DroneRequest droneRequest = new DroneRequest("ExistingName", 0);
+        OffsetDateTime oldUpdatedAt = OffsetDateTime.now().minusDays(1);
+        Drone drone = new Drone();
+        drone.setIdDrone(droneId);
+        drone.setName("ExistingName");
+        drone.setUpdatedAt(oldUpdatedAt);
+        when(droneRepository.findById(droneId)).thenReturn(Optional.of(drone));
+        when(droneRepository.save(any(Drone.class))).thenReturn(drone);
+
+        // When
+        DroneResponse result = droneService.updateNameDrone(droneRequest, droneId);
+
+        // Then
+        assertNotEquals(oldUpdatedAt, result.getUpdatedAt());
+        assertEquals("ExistingName", result.getName());
+        verify(droneRepository).findById(droneId);
+        verify(droneRepository).save(any(Drone.class));
+    }
+
+
 }
