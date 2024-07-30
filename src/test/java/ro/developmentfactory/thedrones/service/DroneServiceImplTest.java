@@ -74,7 +74,7 @@ public class DroneServiceImplTest {
         Drone drone = Drone.builder()
                 .idDrone(UUID.randomUUID())
                 .name("Drone1")
-                .countMove(0) // Setează countMove la o valoare implicită sau valoarea corectă
+                .countMove(0)
                 .createdAt(OffsetDateTime.now())
                 .updatedAt(OffsetDateTime.now())
                 .build();
@@ -100,7 +100,7 @@ public class DroneServiceImplTest {
         // Verify droneRepository.save was called with the correct drone
         verify(droneRepository).save(argThat(d ->
                 d.getName().equals(drone.getName()) &&
-                        d.getCountMove() == drone.getCountMove() && // Verifică countMove
+                        d.getCountMove() == drone.getCountMove() &&
                         d.getCreatedAt().toEpochSecond() == drone.getCreatedAt().toEpochSecond() &&
                         d.getUpdatedAt().toEpochSecond() == drone.getUpdatedAt().toEpochSecond()
         ));

@@ -111,7 +111,7 @@ class DronesStatusServiceImplTest {
     @DisplayName("Save drone status with null drone should throw exception")
     void saveDroneStatus_WhenDroneIsNull_ShouldThrowException() {
         // Given
-        DroneStatus droneStatus = new DroneStatus(); // Drone este null
+        DroneStatus droneStatus = new DroneStatus();
 
         // When & Then
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> droneStatusService.saveDroneStatus(droneStatus),
