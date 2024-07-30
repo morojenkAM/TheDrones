@@ -1,8 +1,8 @@
 package ro.developmentfactory.thedrones.service;
 
-import ro.developmentfactory.thedrones.dto.DroneRequest;
-import ro.developmentfactory.thedrones.dto.DroneResponse;
-import ro.developmentfactory.thedrones.entity.Drone;
+import ro.developmentfactory.thedrones.controller.dto.DroneRequest;
+import ro.developmentfactory.thedrones.controller.dto.DroneResponse;
+import ro.developmentfactory.thedrones.repository.entity.Drone;
 
 
 import java.util.List;
@@ -18,7 +18,6 @@ public interface DroneService {
     //Update operation
     DroneResponse updateNameDrone(DroneRequest droneRequest,UUID idDrone);
 
-    DroneResponse updateCountMove(UUID idDrone,int newCountMove);
 
     void deleteDrone(UUID idDrone);
 }

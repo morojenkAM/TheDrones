@@ -1,4 +1,4 @@
-    package ro.developmentfactory.thedrones.entity;
+    package ro.developmentfactory.thedrones.repository.entity;
 
     import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
     import jakarta.persistence.*;
@@ -15,6 +15,7 @@
     @Builder
     @Entity
     public class DroneStatus {
+
         @Id
         @GeneratedValue(strategy = GenerationType.UUID)
         @Column(name = "id_drone_status" , columnDefinition = "BINARY(16)")

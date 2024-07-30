@@ -4,11 +4,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
-import ro.developmentfactory.thedrones.dto.DroneRequest;
-import ro.developmentfactory.thedrones.dto.DroneResponse;
-import ro.developmentfactory.thedrones.entity.Direction;
-import ro.developmentfactory.thedrones.entity.Drone;
-import ro.developmentfactory.thedrones.entity.DroneStatus;
+import org.springframework.transaction.annotation.Transactional;
+import ro.developmentfactory.thedrones.controller.dto.DroneRequest;
+import ro.developmentfactory.thedrones.controller.dto.DroneResponse;
+import ro.developmentfactory.thedrones.repository.entity.Direction;
+import ro.developmentfactory.thedrones.repository.entity.Drone;
+import ro.developmentfactory.thedrones.repository.entity.DroneStatus;
 import ro.developmentfactory.thedrones.repository.DroneRepository;
 
 import java.time.Instant;
@@ -20,6 +21,10 @@ import java.util.UUID;
 
 @Service
 public class DroneServiceImpl implements DroneService {
+
+    private static final int DEFAULT_POSITION_X = 0;
+    private static final int DEFAULT_POSITION_Y = 0;
+    private static final Direction DEFAULT_DIRECTION = Direction.N;
     private static final Logger log = LoggerFactory.getLogger(DroneServiceImpl.class);
 
     private final DroneRepository droneRepository;
@@ -37,11 +42,12 @@ public class DroneServiceImpl implements DroneService {
     }
 
     @Override
+    @Transactional
     public DroneResponse saveDrone(DroneRequest droneRequest) {
+
         OffsetDateTime currentTime = OffsetDateTime.ofInstant(Instant.now(), ZoneOffset.UTC);
         Drone drone = Drone.builder()
                 .name(droneRequest.getName())
-                .countMove(droneRequest.getCountMove())
                 .createdAt(currentTime)
                 .updatedAt(currentTime)
                 .build();
@@ -50,19 +56,19 @@ public class DroneServiceImpl implements DroneService {
 
         DroneStatus droneStatus = DroneStatus.builder()
                 .drone(savedDrone)
-                .currentPositionX(0)
-                .currentPositionY(0)
-                .facingDirection(Direction.N)
+                .currentPositionX(DEFAULT_POSITION_X)
+                .currentPositionY(DEFAULT_POSITION_Y)
+                .facingDirection(DEFAULT_DIRECTION)
                 .build();
         droneStatusService.saveDroneStatus(droneStatus);
-        log.info("Drone saved with ID: {} ",savedDrone.getIdDrone());
+        log.info("Drone saved : {} ",savedDrone);
         return convertToResponse(savedDrone);
     }
 
     @Override
     public DroneResponse updateNameDrone(DroneRequest droneRequest, UUID idDrone){
         Drone droneDB = droneRepository.findById(idDrone).orElseThrow(() ->
-        new EntityNotFoundException("Drone with id not found"));
+                new EntityNotFoundException("Drone with id " + idDrone + " not found"));
 
         if (Objects.nonNull(droneRequest.getName()) && !"".equalsIgnoreCase(droneRequest.getName())) {
             droneDB.setName(droneRequest.getName());
@@ -75,21 +81,13 @@ public class DroneServiceImpl implements DroneService {
     }
 
     @Override
-    public DroneResponse updateCountMove(UUID idDrone, int newCountMove) {
-        Drone droneDB = droneRepository.findById(idDrone).orElseThrow(() ->
-                new EntityNotFoundException("Drone with id not found"));
-
-        droneDB.setCountMove(newCountMove);
-        Drone updatedDrone = droneRepository.save(droneDB);
-        log.info("Drone with ID: {} updated countMove to {}", idDrone, newCountMove);
-        return convertToResponse(updatedDrone);
-    }
-
-    @Override
+    @Transactional
     public void deleteDrone(UUID idDrone) {
         if (!droneRepository.existsById(idDrone)) {
             throw new EntityNotFoundException("Drone with id not found");
         }
+        DroneStatus droneStatus = droneStatusService.fetchDroneStatus(idDrone);
+        droneStatusService.deleteDroneStatus(droneStatus.getIdDroneStatus());
         droneRepository.deleteById(idDrone);
         log.info("Drone with ID: {} deleted", idDrone);
 

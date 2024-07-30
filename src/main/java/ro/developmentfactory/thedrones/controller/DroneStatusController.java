@@ -2,7 +2,7 @@ package ro.developmentfactory.thedrones.controller;
 
 
 import org.springframework.web.bind.annotation.*;
-import ro.developmentfactory.thedrones.entity.DroneStatus;
+import ro.developmentfactory.thedrones.repository.entity.DroneStatus;
 import ro.developmentfactory.thedrones.service.DroneStatusService;
 
 import java.util.UUID;
@@ -21,7 +21,6 @@ public class DroneStatusController {
     //Get current status
     @GetMapping("/{idDrone}")
     public DroneStatus getDroneStatus(@PathVariable UUID idDrone) {
-        return droneStatusService.fetchDroneStatus(idDrone)
-                .orElseThrow(()-> new IllegalArgumentException("DroneStatus not found for this ID" ));
+        return droneStatusService.fetchDroneStatus(idDrone);
     }
 }

@@ -2,9 +2,8 @@ package ro.developmentfactory.thedrones.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
-import ro.developmentfactory.thedrones.dto.DroneRequest;
-import ro.developmentfactory.thedrones.dto.DroneResponse;
-import ro.developmentfactory.thedrones.entity.Drone;
+import ro.developmentfactory.thedrones.controller.dto.DroneRequest;
+import ro.developmentfactory.thedrones.controller.dto.DroneResponse;
 import ro.developmentfactory.thedrones.service.DroneService;
 
 import java.util.List;
@@ -41,21 +40,13 @@ public class DroneController {
     }
 
     //Update operation
-    @PutMapping("/drone/{idDrones}")
-    public DroneResponse updateDrone(@RequestBody Drone drone,@PathVariable ("idDrones") UUID idDrones){
-        DroneRequest droneRequest = DroneRequest.builder()
-                .name(drone.getName())
-                .build();
+    @PutMapping("/drone/{id}")
+    public DroneResponse updateDrone(@RequestBody DroneRequest droneRequest,@PathVariable ("id") UUID idDrones){
         return droneService.updateNameDrone(droneRequest,idDrones);
     }
 
-    @PutMapping("/drone/countMove/{idDrones}")
-    public DroneResponse updateDroneCountMove(@RequestBody Drone drone,@PathVariable ("idDrones") UUID idDrones){
-        return droneService.updateCountMove(idDrones,drone.getCountMove());
-    }
-
-    @DeleteMapping("/drones/{idDrones}")
-    public String deleteDroneById(@PathVariable ("idDrones") UUID idDrones){
+    @DeleteMapping("/drones/{id}")
+    public String deleteDroneById(@PathVariable ("id") UUID idDrones){
         droneService.deleteDrone(idDrones);
         return "Drone deleted";
     }

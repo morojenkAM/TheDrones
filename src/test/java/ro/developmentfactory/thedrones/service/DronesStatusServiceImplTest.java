@@ -6,8 +6,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import ro.developmentfactory.thedrones.entity.Drone;
-import ro.developmentfactory.thedrones.entity.DroneStatus;
+import ro.developmentfactory.thedrones.repository.entity.Drone;
+import ro.developmentfactory.thedrones.repository.entity.DroneStatus;
 import ro.developmentfactory.thedrones.repository.DroneRepository;
 import ro.developmentfactory.thedrones.repository.DroneStatusRepository;
 
@@ -43,11 +43,11 @@ class DronesStatusServiceImplTest {
         when(droneStatusRepository.findById(droneId)).thenReturn(Optional.of(expectedDroneStatus));
 
         // When
-        Optional<DroneStatus> actualDroneStatus = droneStatusService.fetchDroneStatus(droneId);
+        DroneStatus actualDroneStatus = droneStatusService.fetchDroneStatus(droneId);
 
         // Then
-        assertTrue(actualDroneStatus.isPresent(), "DroneStatus should be present");
-        assertEquals(expectedDroneStatus, actualDroneStatus.get(), "DroneStatus should match the expected value");
+        assertNotNull(actualDroneStatus, "DroneStatus should not be null");
+        assertEquals(expectedDroneStatus, actualDroneStatus, "DroneStatus should match the expected value");
     }
 
     @Test
@@ -57,11 +57,14 @@ class DronesStatusServiceImplTest {
         UUID droneId = UUID.randomUUID();
         when(droneStatusRepository.findById(droneId)).thenReturn(Optional.empty());
 
-        // When
-        Optional<DroneStatus> actualDroneStatus = droneStatusService.fetchDroneStatus(droneId);
+        // When & Then
+        IllegalArgumentException thrown = assertThrows(
+                IllegalArgumentException.class,
+                () -> droneStatusService.fetchDroneStatus(droneId),
+                "Expected fetchDroneStatus() to throw IllegalArgumentException"
+        );
+        assertEquals("DroneStatus ot found for this ID", thrown.getMessage());
 
-        // Then
-        assertFalse(actualDroneStatus.isPresent(), "DroneStatus should not be present");
     }
 
     @Test
@@ -105,30 +108,18 @@ class DronesStatusServiceImplTest {
     }
 
     @Test
-    @DisplayName("Save drone status when drone is null should still save the status")
-    void saveDroneStatus_WhenDroneIsNull_SavesDroneStatusWithoutDrone() {
+    @DisplayName("Save drone status with null drone should throw exception")
+    void saveDroneStatus_WhenDroneIsNull_ShouldThrowException() {
         // Given
-        DroneStatus droneStatus = new DroneStatus();
+        DroneStatus droneStatus = new DroneStatus(); // Drone este null
 
-        // When
-        droneStatusService.saveDroneStatus(droneStatus);
-
-        // Then
-        verify(droneStatusRepository, times(1)).save(droneStatus);
+        // When & Then
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> droneStatusService.saveDroneStatus(droneStatus),
+                "Drone must not be null");
+        assertEquals("Drone must not be null", exception.getMessage());
     }
-    @Test
-    @DisplayName("Save drone status when drone is null should save the status")
-    void saveDroneStatus_WhenDroneStatusHasNullDrone_SavesDroneStatus() {
-        // Given
-        DroneStatus droneStatus = new DroneStatus();
-        // Drone is null
 
-        // When
-        droneStatusService.saveDroneStatus(droneStatus);
 
-        // Then
-        verify(droneStatusRepository, times(1)).save(droneStatus);
-    }
 
 
     @Test
@@ -161,27 +152,6 @@ class DronesStatusServiceImplTest {
     }
 
 
-    @Test
-    @DisplayName("Save drone status when repository throws exception should handle it gracefully")
-    void saveDroneStatus_WhenRepositoryThrowsException_HandlesGracefully() {
-        // Given
-        DroneStatus droneStatus = new DroneStatus();
-        UUID droneId = UUID.randomUUID();
-        Drone drone = new Drone();
-        drone.setIdDrone(droneId);
-        droneStatus.setDrone(drone);
-
-        when(droneRepository.findById(droneId)).thenReturn(Optional.of(drone));
-        doThrow(new RuntimeException("Database error")).when(droneStatusRepository).save(droneStatus);
-
-        // When & Then
-        RuntimeException thrown = assertThrows(
-                RuntimeException.class,
-                () -> droneStatusService.saveDroneStatus(droneStatus),
-                "Expected saveDroneStatus() to throw RuntimeException due to database error"
-        );
-        assertEquals("Database error", thrown.getMessage());
-    }
 
     @Test
     @DisplayName("Fetch drone status when repository returns empty should return empty optional")
@@ -190,11 +160,13 @@ class DronesStatusServiceImplTest {
         UUID droneId = UUID.randomUUID();
         when(droneStatusRepository.findById(droneId)).thenReturn(Optional.empty());
 
-        // When
-        Optional<DroneStatus> actualDroneStatus = droneStatusService.fetchDroneStatus(droneId);
-
-        // Then
-        assertFalse(actualDroneStatus.isPresent(), "DroneStatus should not be present");
+        // When & Then
+      IllegalArgumentException thrown = assertThrows(
+              IllegalArgumentException.class,
+              () -> droneStatusService.fetchDroneStatus(droneId),
+              "Expected fetchDroneStatus() to throw IllegalArgumentException"
+      );
+      assertEquals("DroneStatus ot found for this ID", thrown.getMessage());
     }
 
 

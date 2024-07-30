@@ -1,4 +1,4 @@
-package ro.developmentfactory.thedrones.dto;
+package ro.developmentfactory.thedrones.controller.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

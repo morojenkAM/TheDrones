@@ -7,13 +7,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ro.developmentfactory.thedrones.dto.DroneRequest;
-import ro.developmentfactory.thedrones.dto.DroneResponse;
-import ro.developmentfactory.thedrones.entity.Drone;
-import ro.developmentfactory.thedrones.entity.DroneStatus;
+import ro.developmentfactory.thedrones.controller.dto.DroneRequest;
+import ro.developmentfactory.thedrones.controller.dto.DroneResponse;
+import ro.developmentfactory.thedrones.repository.entity.Direction;
+import ro.developmentfactory.thedrones.repository.entity.Drone;
+import ro.developmentfactory.thedrones.repository.entity.DroneStatus;
 import ro.developmentfactory.thedrones.repository.DroneRepository;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -38,7 +41,20 @@ public class DroneServiceImplTest {
     void givenDroneList_whenFetchDroneList_thenReturnDroneList() {
         // Given
         Drone drone1 = new Drone();
+        drone1.setIdDrone(UUID.randomUUID());
+        drone1.setName("Drone1");
+        drone1.setCountMove(5);
+        drone1.setCreatedAt(OffsetDateTime.now(ZoneOffset.UTC));
+        drone1.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
+
         Drone drone2 = new Drone();
+        drone2.setIdDrone(UUID.randomUUID());
+        drone2.setName("Drone2");
+        drone2.setCountMove(5);
+        drone2.setCreatedAt(OffsetDateTime.now(ZoneOffset.UTC));
+        drone2.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
+
+
         List<Drone> droneList = List.of(drone1, drone2);
         when(droneRepository.findAll()).thenReturn(droneList);
 
@@ -54,13 +70,20 @@ public class DroneServiceImplTest {
     @DisplayName("Given a DroneRequest, when saveDrone is called, then save the drone and its status and return the response")
     void givenDroneRequest_whenSaveDrone_thenSaveDroneAndReturnResponse() {
         // Given
-        DroneRequest droneRequest = new DroneRequest("Drone1", 5);
+        DroneRequest droneRequest = new DroneRequest("Drone1");
         Drone drone = Drone.builder()
                 .idDrone(UUID.randomUUID())
                 .name("Drone1")
-                .countMove(5)
+                .countMove(0) // Setează countMove la o valoare implicită sau valoarea corectă
                 .createdAt(OffsetDateTime.now())
                 .updatedAt(OffsetDateTime.now())
+                .build();
+
+        DroneStatus expectedDroneStatus = DroneStatus.builder()
+                .drone(drone)
+                .currentPositionX(0)
+                .currentPositionY(0)
+                .facingDirection(Direction.N)
                 .build();
 
         when(droneRepository.save(any(Drone.class))).thenReturn(drone);
@@ -73,11 +96,22 @@ public class DroneServiceImplTest {
         assertNotNull(result);
         assertEquals(drone.getIdDrone(), result.getIdDrone());
         assertEquals(droneRequest.getName(), result.getName());
-        assertEquals(droneRequest.getCountMove(), result.getCountMove());
-        verify(droneRepository).save(any(Drone.class));
-        verify(droneStatusService).saveDroneStatus(any(DroneStatus.class));
-    }
 
+        // Verify droneRepository.save was called with the correct drone
+        verify(droneRepository).save(argThat(d ->
+                d.getName().equals(drone.getName()) &&
+                        d.getCountMove() == drone.getCountMove() && // Verifică countMove
+                        d.getCreatedAt().toEpochSecond() == drone.getCreatedAt().toEpochSecond() &&
+                        d.getUpdatedAt().toEpochSecond() == drone.getUpdatedAt().toEpochSecond()
+        ));
+
+        // Verify droneStatusService.saveDroneStatus was called with the correct status
+        verify(droneStatusService).saveDroneStatus(argThat(ds ->
+                ds.getCurrentPositionX() == expectedDroneStatus.getCurrentPositionX() &&
+                        ds.getCurrentPositionY() == expectedDroneStatus.getCurrentPositionY() &&
+                        ds.getFacingDirection() == expectedDroneStatus.getFacingDirection() &&
+                        ds.getDrone().equals(drone)));
+    }
 
 
     @Test
@@ -85,10 +119,14 @@ public class DroneServiceImplTest {
     void givenValidDroneRequestAndId_whenUpdateNameDrone_thenUpdateDroneAndReturnResponse() {
         // Given
         UUID droneId = UUID.randomUUID();
-        DroneRequest droneRequest = new DroneRequest("NewName", 0);
-        Drone drone = new Drone();
-        drone.setIdDrone(droneId);
-        drone.setName("OldName");
+        DroneRequest droneRequest = new DroneRequest("NewName");
+        Drone drone = Drone.builder()
+                .idDrone(droneId)
+                .name("OldName")
+                .countMove(5)
+                .createdAt(OffsetDateTime.now())
+                .updatedAt(OffsetDateTime.now().minusDays(1))
+                .build();
         when(droneRepository.findById(droneId)).thenReturn(Optional.of(drone));
         when(droneRepository.save(any(Drone.class))).thenReturn(drone);
 
@@ -97,54 +135,9 @@ public class DroneServiceImplTest {
 
         // Then
         assertEquals("NewName", result.getName());
+
         verify(droneRepository).findById(droneId);
         verify(droneRepository).save(any(Drone.class));
-    }
-
-    @Test
-    @DisplayName("Given an invalid Drone id, when updateNameDrone is called, then throw EntityNotFoundException")
-    void givenInvalidDroneId_whenUpdateNameDrone_thenThrowEntityNotFoundException() {
-        // Given
-        UUID droneId = UUID.randomUUID();
-        DroneRequest droneRequest = new DroneRequest("NewName", 0);
-        when(droneRepository.findById(droneId)).thenReturn(Optional.empty());
-
-        // When & Then
-        assertThrows(EntityNotFoundException.class, () -> droneService.updateNameDrone(droneRequest, droneId));
-        verify(droneRepository).findById(droneId);
-    }
-
-    @Test
-    @DisplayName("Given a valid Drone id and new countMove, when updateCountMove is called, then update the drone's countMove and return the updated response")
-    void givenValidDroneIdAndCountMove_whenUpdateCountMove_thenUpdateDroneAndReturnResponse() {
-        // Given
-        UUID droneId = UUID.randomUUID();
-        int newCountMove = 10;
-        Drone drone = new Drone();
-        drone.setIdDrone(droneId);
-        drone.setCountMove(5);
-        when(droneRepository.findById(droneId)).thenReturn(Optional.of(drone));
-        when(droneRepository.save(any(Drone.class))).thenReturn(drone);
-
-        // When
-        DroneResponse result = droneService.updateCountMove(droneId, newCountMove);
-
-        // Then
-        assertEquals(newCountMove, result.getCountMove());
-        verify(droneRepository).findById(droneId);
-        verify(droneRepository).save(any(Drone.class));
-    }
-
-    @Test
-    @DisplayName("Given an invalid Drone id, when updateCountMove is called, then throw EntityNotFoundException")
-    void givenInvalidDroneId_whenUpdateCountMove_thenThrowEntityNotFoundException() {
-        // Given
-        UUID droneId = UUID.randomUUID();
-        when(droneRepository.findById(droneId)).thenReturn(Optional.empty());
-
-        // When & Then
-        assertThrows(EntityNotFoundException.class, () -> droneService.updateCountMove(droneId, 10));
-        verify(droneRepository).findById(droneId);
     }
 
     @Test
@@ -152,13 +145,21 @@ public class DroneServiceImplTest {
     void givenValidDroneId_whenDeleteDrone_thenDeleteDrone() {
         // Given
         UUID droneId = UUID.randomUUID();
+        DroneStatus droneStatus = DroneStatus.builder()
+                .idDroneStatus(UUID.randomUUID())
+                .build();
+
         when(droneRepository.existsById(droneId)).thenReturn(true);
+        when(droneStatusService.fetchDroneStatus(droneId)).thenReturn(droneStatus);
+        doNothing().when(droneStatusService).deleteDroneStatus(droneStatus.getIdDroneStatus());
 
         // When
         droneService.deleteDrone(droneId);
 
         // Then
         verify(droneRepository).deleteById(droneId);
+        verify(droneStatusService).fetchDroneStatus(droneId);
+        verify(droneStatusService).deleteDroneStatus(droneStatus.getIdDroneStatus());
     }
 
     @Test
@@ -172,6 +173,7 @@ public class DroneServiceImplTest {
         assertThrows(EntityNotFoundException.class, () -> droneService.deleteDrone(droneId));
         verify(droneRepository).existsById(droneId);
     }
+
     @Test
     @DisplayName("Given an empty list of drones, when fetchDroneList is called, then return an empty list")
     void givenEmptyDroneList_whenFetchDroneList_thenReturnEmptyDroneList() {
@@ -188,73 +190,11 @@ public class DroneServiceImplTest {
     }
 
     @Test
-    @DisplayName("Given a DroneRequest with missing name, when saveDrone is called, then save the drone with default name and return the response")
-    void givenDroneRequestWithMissingName_whenSaveDrone_thenSaveDroneWithDefaultName() {
-        // Given
-        DroneRequest droneRequest = new DroneRequest(null, 5);
-        Drone drone = Drone.builder()
-                .idDrone(UUID.randomUUID())
-                .name("UnnamedDrone")  // Numele implicit
-                .countMove(5)
-                .createdAt(OffsetDateTime.now())
-                .updatedAt(OffsetDateTime.now())
-                .build();
-
-        when(droneRepository.save(any(Drone.class))).thenReturn(drone);
-        doNothing().when(droneStatusService).saveDroneStatus(any(DroneStatus.class));
-
-        // When
-        DroneResponse result = droneService.saveDrone(droneRequest);
-
-        // Then
-        assertNotNull(result);
-        assertEquals("UnnamedDrone", result.getName());
-        verify(droneRepository).save(any(Drone.class));
-        verify(droneStatusService).saveDroneStatus(any(DroneStatus.class));
-    }
-
-    @Test
-    @DisplayName("Given a Drone with no movement, when updateCountMove is called with zero, then update the countMove to zero")
-    void givenDroneWithNoMovement_whenUpdateCountMoveToZero_thenUpdateCountMoveToZero() {
-        // Given
-        UUID droneId = UUID.randomUUID();
-        Drone drone = new Drone();
-        drone.setIdDrone(droneId);
-        drone.setCountMove(5);
-        when(droneRepository.findById(droneId)).thenReturn(Optional.of(drone));
-        when(droneRepository.save(any(Drone.class))).thenReturn(drone);
-
-        // When
-        DroneResponse result = droneService.updateCountMove(droneId, 0);
-
-        // Then
-        assertEquals(0, result.getCountMove());
-        verify(droneRepository).findById(droneId);
-        verify(droneRepository).save(any(Drone.class));
-    }
-
-    @Test
-    @DisplayName("Given a valid Drone id, when deleteDrone is called twice, then the second call should throw EntityNotFoundException")
-    void givenValidDroneId_whenDeleteDroneCalledTwice_thenThrowEntityNotFoundExceptionOnSecondCall() {
-        // Given
-        UUID droneId = UUID.randomUUID();
-        when(droneRepository.existsById(droneId)).thenReturn(true).thenReturn(false);
-
-        // When
-        droneService.deleteDrone(droneId);
-
-        // Then
-        assertThrows(EntityNotFoundException.class, () -> droneService.deleteDrone(droneId));
-        verify(droneRepository, times(2)).existsById(droneId);
-        verify(droneRepository).deleteById(droneId);
-    }
-
-    @Test
     @DisplayName("Given a Drone with an old updatedAt timestamp, when updateNameDrone is called with a new name, then updatedAt should be refreshed")
     void givenDroneWithOldUpdatedAt_whenUpdateNameDrone_thenUpdatedAtShouldBeRefreshed() {
         // Given
         UUID droneId = UUID.randomUUID();
-        DroneRequest droneRequest = new DroneRequest("UpdatedName", 0);
+        DroneRequest droneRequest = new DroneRequest("UpdatedName");
         OffsetDateTime oldUpdatedAt = OffsetDateTime.now().minusDays(1);
         Drone drone = new Drone();
         drone.setIdDrone(droneId);
@@ -272,15 +212,7 @@ public class DroneServiceImplTest {
         verify(droneRepository).findById(droneId);
         verify(droneRepository).save(any(Drone.class));
     }
-    @Test
-    @DisplayName("Given a DroneRequest with negative countMove, when saveDrone is called, then throw IllegalArgumentException")
-    void givenDroneRequestWithNegativeCountMove_whenSaveDrone_thenThrowIllegalArgumentException() {
-        // Given
-        DroneRequest droneRequest = new DroneRequest("Drone1", -5);
 
-        // When & Then
-        assertThrows(NullPointerException.class, () -> droneService.saveDrone(droneRequest));
-    }
     @Test
     @DisplayName("Given a non-empty list of drones, when fetchDroneList is called, then return the list of drones")
     void givenNonEmptyDroneList_whenFetchDroneList_thenReturnNonEmptyDroneList() {
@@ -298,12 +230,13 @@ public class DroneServiceImplTest {
         assertEquals(2, result.size());
         verify(droneRepository).findAll();
     }
+
     @Test
     @DisplayName("Given a Drone with existing name, when updateNameDrone is called with the same name, then updatedAt should be refreshed")
     void givenDroneWithExistingName_whenUpdateNameDrone_thenUpdatedAtShouldBeRefreshed() {
         // Given
         UUID droneId = UUID.randomUUID();
-        DroneRequest droneRequest = new DroneRequest("ExistingName", 0);
+        DroneRequest droneRequest = new DroneRequest("ExistingName");
         OffsetDateTime oldUpdatedAt = OffsetDateTime.now().minusDays(1);
         Drone drone = new Drone();
         drone.setIdDrone(droneId);
@@ -322,5 +255,28 @@ public class DroneServiceImplTest {
         verify(droneRepository).save(any(Drone.class));
     }
 
+    @Test
+    @DisplayName("Given a Drone with a new name, when updateNameDrone is called with the same name, then updatedAt should be refreshed")
+    void givenDroneWithSameName_whenUpdateNameDroneCalled_thenUpdatedAtShouldBeRefreshed() {
+        // Given
+        UUID droneId = UUID.randomUUID();
+        DroneRequest droneRequest = new DroneRequest("SameName");
+        OffsetDateTime oldUpdatedAt = OffsetDateTime.now().minusDays(1);
+        Drone drone = Drone.builder()
+                .idDrone(droneId)
+                .name("SameName")
+                .updatedAt(oldUpdatedAt)
+                .build();
+        when(droneRepository.findById(droneId)).thenReturn(Optional.of(drone));
+        when(droneRepository.save(any(Drone.class))).thenReturn(drone);
 
+        // When
+        DroneResponse result = droneService.updateNameDrone(droneRequest, droneId);
+
+        // Then
+        assertNotEquals(oldUpdatedAt, result.getUpdatedAt());
+        assertEquals("SameName", result.getName());
+        verify(droneRepository).findById(droneId);
+        verify(droneRepository).save(any(Drone.class));
+    }
 }

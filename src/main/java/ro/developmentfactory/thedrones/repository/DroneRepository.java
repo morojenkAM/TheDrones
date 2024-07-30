@@ -1,7 +1,7 @@
 package ro.developmentfactory.thedrones.repository;
 
 import org.springframework.data.repository.CrudRepository;
-import ro.developmentfactory.thedrones.entity.Drone;
+import ro.developmentfactory.thedrones.repository.entity.Drone;
 
 import java.util.UUID;
 
