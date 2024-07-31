@@ -46,8 +46,8 @@ public class DroneController {
     }
 
     @DeleteMapping("/drones/{id}")
-    public String deleteDroneById(@PathVariable ("id") UUID idDrones){
-        droneService.deleteDrone(idDrones);
+    public String deleteDroneById(@PathVariable ("id") UUID idDrone){
+        droneService.deleteDrone(idDrone);
         return "Drone deleted";
     }
 }

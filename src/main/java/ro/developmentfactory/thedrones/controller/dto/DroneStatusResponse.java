@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ro.developmentfactory.thedrones.repository.entity.Direction;
-import ro.developmentfactory.thedrones.repository.entity.Drone;
 
 import java.util.UUID;
 @Data
@@ -17,7 +16,7 @@ public class DroneStatusResponse {
     private Integer currentPositionX;
     private Integer currentPositionY;
     private Direction facingDirection;
-    private Drone drone;
+    private UUID idDrone;
 }
 
 

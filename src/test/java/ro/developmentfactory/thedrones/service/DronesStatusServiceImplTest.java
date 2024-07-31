@@ -1,11 +1,12 @@
 package ro.developmentfactory.thedrones.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import ro.developmentfactory.thedrones.controller.dto.DroneStatusResponse;
 import ro.developmentfactory.thedrones.repository.entity.Drone;
 import ro.developmentfactory.thedrones.repository.entity.DroneStatus;
 import ro.developmentfactory.thedrones.repository.DroneRepository;
@@ -38,16 +39,21 @@ class DronesStatusServiceImplTest {
     void fetchDroneStatus_WhenIdExists_ReturnsDroneStatus() {
         // Given
         UUID droneId = UUID.randomUUID();
+        Drone drone = new Drone();
+        drone.setIdDrone(droneId);
+
         DroneStatus expectedDroneStatus = new DroneStatus();
         expectedDroneStatus.setIdDroneStatus(droneId);
+        expectedDroneStatus.setDrone(drone);
+
         when(droneStatusRepository.findById(droneId)).thenReturn(Optional.of(expectedDroneStatus));
 
         // When
-        DroneStatus actualDroneStatus = droneStatusService.fetchDroneStatus(droneId);
+        DroneStatusResponse actualDroneStatusResponse = droneStatusService.fetchDroneStatus(droneId);
 
         // Then
-        assertNotNull(actualDroneStatus, "DroneStatus should not be null");
-        assertEquals(expectedDroneStatus, actualDroneStatus, "DroneStatus should match the expected value");
+        assertNotNull(actualDroneStatusResponse, "DroneStatusResponse should not be null");
+        assertEquals(droneId, actualDroneStatusResponse.getIdDroneStatus(), "DroneStatusResponse ID should match the expected value");
     }
 
     @Test
@@ -63,8 +69,7 @@ class DronesStatusServiceImplTest {
                 () -> droneStatusService.fetchDroneStatus(droneId),
                 "Expected fetchDroneStatus() to throw IllegalArgumentException"
         );
-        assertEquals("DroneStatus ot found for this ID", thrown.getMessage());
-
+        assertEquals("DroneStatus not found for this ID", thrown.getMessage());
     }
 
     @Test
@@ -119,9 +124,6 @@ class DronesStatusServiceImplTest {
         assertEquals("Drone must not be null", exception.getMessage());
     }
 
-
-
-
     @Test
     @DisplayName("Update drone status when it exists should update the status")
     void updateDroneStatus_WhenDroneStatusExists_UpdatesDroneStatus() {
@@ -151,8 +153,6 @@ class DronesStatusServiceImplTest {
         assertEquals(2, updatedDroneStatus.getCurrentPositionX(), "DroneStatus position should be updated");
     }
 
-
-
     @Test
     @DisplayName("Fetch drone status when repository returns empty should return empty optional")
     void fetchDroneStatus_WhenRepositoryReturnsEmpty_HandlesGracefully() {
@@ -161,14 +161,11 @@ class DronesStatusServiceImplTest {
         when(droneStatusRepository.findById(droneId)).thenReturn(Optional.empty());
 
         // When & Then
-      IllegalArgumentException thrown = assertThrows(
-              IllegalArgumentException.class,
-              () -> droneStatusService.fetchDroneStatus(droneId),
-              "Expected fetchDroneStatus() to throw IllegalArgumentException"
-      );
-      assertEquals("DroneStatus ot found for this ID", thrown.getMessage());
+        IllegalArgumentException thrown = assertThrows(
+                IllegalArgumentException.class,
+                () -> droneStatusService.fetchDroneStatus(droneId),
+                "Expected fetchDroneStatus() to throw IllegalArgumentException"
+        );
+        assertEquals("DroneStatus not found for this ID", thrown.getMessage());
     }
-
-
-
 }

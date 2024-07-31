@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ro.developmentfactory.thedrones.controller.dto.DroneRequest;
 import ro.developmentfactory.thedrones.controller.dto.DroneResponse;
+import ro.developmentfactory.thedrones.controller.dto.DroneStatusResponse;
 import ro.developmentfactory.thedrones.repository.entity.Direction;
 import ro.developmentfactory.thedrones.repository.entity.Drone;
 import ro.developmentfactory.thedrones.repository.entity.DroneStatus;
@@ -86,7 +87,7 @@ public class DroneServiceImpl implements DroneService {
         if (!droneRepository.existsById(idDrone)) {
             throw new EntityNotFoundException("Drone with id not found");
         }
-        DroneStatus droneStatus = droneStatusService.fetchDroneStatus(idDrone);
+        DroneStatusResponse droneStatus = droneStatusService.fetchDroneStatus(idDrone);
         droneStatusService.deleteDroneStatus(droneStatus.getIdDroneStatus());
         droneRepository.deleteById(idDrone);
         log.info("Drone with ID: {} deleted", idDrone);

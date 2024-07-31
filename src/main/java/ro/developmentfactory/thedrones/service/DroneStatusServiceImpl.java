@@ -2,6 +2,7 @@ package ro.developmentfactory.thedrones.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
+import ro.developmentfactory.thedrones.controller.dto.DroneStatusResponse;
 import ro.developmentfactory.thedrones.repository.entity.Drone;
 import ro.developmentfactory.thedrones.repository.entity.DroneStatus;
 import ro.developmentfactory.thedrones.repository.DroneRepository;
@@ -23,9 +24,10 @@ public class DroneStatusServiceImpl implements DroneStatusService {
 
     // Read
     @Override
-    public DroneStatus fetchDroneStatus(UUID idDrone) {
-        return droneStatusRepository.findById(idDrone)
-                .orElseThrow(() -> new IllegalArgumentException("DroneStatus ot found for this ID"));
+    public DroneStatusResponse fetchDroneStatus(UUID idDrone) {
+        DroneStatus droneStatus = droneStatusRepository.findById(idDrone)
+                .orElseThrow(() -> new IllegalArgumentException("DroneStatus not found for this ID"));
+        return convertToResponse(droneStatus);
     }
 
     // Save
@@ -52,4 +54,21 @@ public class DroneStatusServiceImpl implements DroneStatusService {
         }
         droneStatusRepository.deleteById(idDroneStatus);
     }
+
+
+    private DroneStatusResponse convertToResponse(DroneStatus droneStatus) {
+        if (droneStatus.getDrone() == null) {
+            throw new IllegalArgumentException("Drone must not be null");
+        }
+
+        DroneStatusResponse response = new DroneStatusResponse();
+        response.setIdDroneStatus(droneStatus.getIdDroneStatus());
+        response.setIdDrone(droneStatus.getDrone().getIdDrone());
+        response.setCurrentPositionX(droneStatus.getCurrentPositionX());
+        response.setCurrentPositionY(droneStatus.getCurrentPositionY());
+        response.setFacingDirection(droneStatus.getFacingDirection());
+
+        return response;
+    }
+
 }

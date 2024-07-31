@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ro.developmentfactory.thedrones.controller.dto.DroneRequest;
 import ro.developmentfactory.thedrones.controller.dto.DroneResponse;
+import ro.developmentfactory.thedrones.controller.dto.DroneStatusResponse;
 import ro.developmentfactory.thedrones.repository.entity.Direction;
 import ro.developmentfactory.thedrones.repository.entity.Drone;
 import ro.developmentfactory.thedrones.repository.entity.DroneStatus;
@@ -107,8 +108,8 @@ public class DroneServiceImplTest {
 
         // Verify droneStatusService.saveDroneStatus was called with the correct status
         verify(droneStatusService).saveDroneStatus(argThat(ds ->
-                ds.getCurrentPositionX() == expectedDroneStatus.getCurrentPositionX() &&
-                        ds.getCurrentPositionY() == expectedDroneStatus.getCurrentPositionY() &&
+                Objects.equals(ds.getCurrentPositionX(), expectedDroneStatus.getCurrentPositionX()) &&
+                        Objects.equals(ds.getCurrentPositionY(), expectedDroneStatus.getCurrentPositionY()) &&
                         ds.getFacingDirection() == expectedDroneStatus.getFacingDirection() &&
                         ds.getDrone().equals(drone)));
     }
@@ -145,13 +146,13 @@ public class DroneServiceImplTest {
     void givenValidDroneId_whenDeleteDrone_thenDeleteDrone() {
         // Given
         UUID droneId = UUID.randomUUID();
-        DroneStatus droneStatus = DroneStatus.builder()
+        DroneStatusResponse droneStatusResponse = DroneStatusResponse.builder()
                 .idDroneStatus(UUID.randomUUID())
                 .build();
 
         when(droneRepository.existsById(droneId)).thenReturn(true);
-        when(droneStatusService.fetchDroneStatus(droneId)).thenReturn(droneStatus);
-        doNothing().when(droneStatusService).deleteDroneStatus(droneStatus.getIdDroneStatus());
+        when(droneStatusService.fetchDroneStatus(droneId)).thenReturn(droneStatusResponse);
+        doNothing().when(droneStatusService).deleteDroneStatus(droneStatusResponse.getIdDroneStatus());
 
         // When
         droneService.deleteDrone(droneId);
@@ -159,8 +160,9 @@ public class DroneServiceImplTest {
         // Then
         verify(droneRepository).deleteById(droneId);
         verify(droneStatusService).fetchDroneStatus(droneId);
-        verify(droneStatusService).deleteDroneStatus(droneStatus.getIdDroneStatus());
+        verify(droneStatusService).deleteDroneStatus(droneStatusResponse.getIdDroneStatus());
     }
+
 
     @Test
     @DisplayName("Given an invalid Drone id, when deleteDrone is called, then throw EntityNotFoundException")
