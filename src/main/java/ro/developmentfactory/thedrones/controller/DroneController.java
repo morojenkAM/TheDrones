@@ -26,26 +26,28 @@ public class DroneController {
         return droneService.saveDrone(droneRequest);
     }
 
-    @GetMapping("/drones")
+    @GetMapping
     public List<DroneResponse> fetchDronesList() {
         return droneService.fetchDroneList().stream()
                 .map(drone -> DroneResponse.builder()
-                .idDrone(drone.getIdDrone())
-                .name(drone.getName())
-                .countMove(drone.getCountMove())
-                .createdAt(drone.getCreatedAt())
-                .updatedAt(drone.getUpdatedAt())
-                .build())
-        .collect(Collectors.toList());
+                        .idDrone(drone.getIdDrone())
+                        .name(drone.getName())
+                        .countMove(drone.getCountMove())
+                        .createdAt(drone.getCreatedAt())
+                        .updatedAt(drone.getUpdatedAt())
+                        .build())
+                .collect(Collectors.toList());
     }
+
 
     //Update operation
-    @PutMapping("/drone/{id}")
-    public DroneResponse updateDrone(@RequestBody DroneRequest droneRequest,@PathVariable ("id") UUID idDrones){
-        return droneService.updateNameDrone(droneRequest,idDrones);
+    @PutMapping("/{id}")
+    public DroneResponse updateDrone(@Valid @RequestBody DroneRequest droneRequest, @PathVariable("id") UUID idDrone) {
+        return droneService.updateNameDrone(droneRequest, idDrone);
     }
 
-    @DeleteMapping("/drones/{id}")
+
+    @DeleteMapping("/{id}")
     public String deleteDroneById(@PathVariable ("id") UUID idDrone){
         droneService.deleteDrone(idDrone);
         return "Drone deleted";

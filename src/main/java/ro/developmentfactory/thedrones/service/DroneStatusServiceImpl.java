@@ -25,10 +25,19 @@ public class DroneStatusServiceImpl implements DroneStatusService {
     // Read
     @Override
     public DroneStatusResponse fetchDroneStatus(UUID idDrone) {
-        DroneStatus droneStatus = droneStatusRepository.findById(idDrone)
-                .orElseThrow(() -> new IllegalArgumentException("DroneStatus not found for this ID"));
+        Drone drone = droneRepository.findById(idDrone)
+                .orElseThrow(() -> new IllegalArgumentException("Drone not found for this ID"));
+
+        if (drone.getDroneStatusList() == null || drone.getDroneStatusList().isEmpty()) {
+            throw new IllegalArgumentException("No DroneStatus found for this Drone");
+        }
+
+        DroneStatus droneStatus = drone.getDroneStatusList().getFirst();
+
         return convertToResponse(droneStatus);
     }
+
+
 
     // Save
     @Override

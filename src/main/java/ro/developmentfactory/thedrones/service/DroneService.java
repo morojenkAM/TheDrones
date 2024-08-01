@@ -18,6 +18,5 @@ public interface DroneService {
     //Update operation
     DroneResponse updateNameDrone(DroneRequest droneRequest,UUID idDrone);
 
-
     void deleteDrone(UUID idDrone);
 }

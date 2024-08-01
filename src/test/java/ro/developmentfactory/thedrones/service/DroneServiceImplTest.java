@@ -9,17 +9,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ro.developmentfactory.thedrones.controller.dto.DroneRequest;
 import ro.developmentfactory.thedrones.controller.dto.DroneResponse;
-import ro.developmentfactory.thedrones.controller.dto.DroneStatusResponse;
 import ro.developmentfactory.thedrones.repository.entity.Direction;
 import ro.developmentfactory.thedrones.repository.entity.Drone;
 import ro.developmentfactory.thedrones.repository.entity.DroneStatus;
 import ro.developmentfactory.thedrones.repository.DroneRepository;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -146,22 +142,28 @@ public class DroneServiceImplTest {
     void givenValidDroneId_whenDeleteDrone_thenDeleteDrone() {
         // Given
         UUID droneId = UUID.randomUUID();
-        DroneStatusResponse droneStatusResponse = DroneStatusResponse.builder()
-                .idDroneStatus(UUID.randomUUID())
+        Drone drone = Drone.builder()
+                .idDrone(droneId)
+                .droneStatusList(new ArrayList<>())
                 .build();
+        DroneStatus droneStatus = DroneStatus.builder()
+                .idDroneStatus(UUID.randomUUID())
+                .drone(drone)
+                .build();
+        drone.getDroneStatusList().add(droneStatus);
 
-        when(droneRepository.existsById(droneId)).thenReturn(true);
-        when(droneStatusService.fetchDroneStatus(droneId)).thenReturn(droneStatusResponse);
-        doNothing().when(droneStatusService).deleteDroneStatus(droneStatusResponse.getIdDroneStatus());
+        when(droneRepository.findById(droneId)).thenReturn(Optional.of(drone));
+        doNothing().when(droneStatusService).deleteDroneStatus(droneStatus.getIdDroneStatus());
 
         // When
         droneService.deleteDrone(droneId);
 
         // Then
         verify(droneRepository).deleteById(droneId);
-        verify(droneStatusService).fetchDroneStatus(droneId);
-        verify(droneStatusService).deleteDroneStatus(droneStatusResponse.getIdDroneStatus());
+        verify(droneStatusService, times(drone.getDroneStatusList().size())).deleteDroneStatus(any(UUID.class));
     }
+
+
 
 
     @Test
@@ -169,12 +171,13 @@ public class DroneServiceImplTest {
     void givenInvalidDroneId_whenDeleteDrone_thenThrowEntityNotFoundException() {
         // Given
         UUID droneId = UUID.randomUUID();
-        when(droneRepository.existsById(droneId)).thenReturn(false);
+        when(droneRepository.findById(droneId)).thenReturn(Optional.empty());
 
         // When & Then
         assertThrows(EntityNotFoundException.class, () -> droneService.deleteDrone(droneId));
-        verify(droneRepository).existsById(droneId);
+        verify(droneRepository).findById(droneId);
     }
+
 
     @Test
     @DisplayName("Given an empty list of drones, when fetchDroneList is called, then return an empty list")

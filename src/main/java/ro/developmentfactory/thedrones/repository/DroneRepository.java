@@ -7,6 +7,4 @@ import java.util.UUID;
 
 
 public interface DroneRepository extends CrudRepository<Drone,UUID> {
-
-
 }

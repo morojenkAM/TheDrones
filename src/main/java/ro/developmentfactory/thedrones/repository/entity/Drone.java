@@ -33,7 +33,7 @@ public class Drone{
     @Column(name = "updated_at",columnDefinition =  "TIMESTAMP")
     private OffsetDateTime updatedAt;
 
-    @JsonBackReference // Add this annotation to prevent infinite recursion
+    @JsonBackReference
     @OneToMany(mappedBy = "drone", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<DroneStatus> droneStatusList;
 

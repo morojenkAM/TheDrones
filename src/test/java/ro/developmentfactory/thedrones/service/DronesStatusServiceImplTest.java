@@ -12,6 +12,7 @@ import ro.developmentfactory.thedrones.repository.entity.DroneStatus;
 import ro.developmentfactory.thedrones.repository.DroneRepository;
 import ro.developmentfactory.thedrones.repository.DroneStatusRepository;
 
+import java.util.LinkedList;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -46,7 +47,13 @@ class DronesStatusServiceImplTest {
         expectedDroneStatus.setIdDroneStatus(droneId);
         expectedDroneStatus.setDrone(drone);
 
-        when(droneStatusRepository.findById(droneId)).thenReturn(Optional.of(expectedDroneStatus));
+
+        LinkedList<DroneStatus> droneStatusList = new LinkedList<>();
+        droneStatusList.add(expectedDroneStatus);
+        drone.setDroneStatusList(droneStatusList);
+
+
+        when(droneRepository.findById(droneId)).thenReturn(Optional.of(drone));
 
         // When
         DroneStatusResponse actualDroneStatusResponse = droneStatusService.fetchDroneStatus(droneId);
@@ -54,7 +61,10 @@ class DronesStatusServiceImplTest {
         // Then
         assertNotNull(actualDroneStatusResponse, "DroneStatusResponse should not be null");
         assertEquals(droneId, actualDroneStatusResponse.getIdDroneStatus(), "DroneStatusResponse ID should match the expected value");
+        assertEquals(droneId, actualDroneStatusResponse.getIdDrone(), "DroneStatusResponse drone ID should match the expected value");
+
     }
+
 
     @Test
     @DisplayName("Fetch drone status should return empty when ID does not exist")
@@ -69,7 +79,7 @@ class DronesStatusServiceImplTest {
                 () -> droneStatusService.fetchDroneStatus(droneId),
                 "Expected fetchDroneStatus() to throw IllegalArgumentException"
         );
-        assertEquals("DroneStatus not found for this ID", thrown.getMessage());
+        assertEquals("Drone not found for this ID", thrown.getMessage());
     }
 
     @Test
@@ -166,6 +176,6 @@ class DronesStatusServiceImplTest {
                 () -> droneStatusService.fetchDroneStatus(droneId),
                 "Expected fetchDroneStatus() to throw IllegalArgumentException"
         );
-        assertEquals("DroneStatus not found for this ID", thrown.getMessage());
+        assertEquals("Drone not found for this ID", thrown.getMessage());
     }
 }
