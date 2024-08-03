@@ -1,6 +1,8 @@
 package ro.developmentfactory.thedrones.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ro.developmentfactory.thedrones.controller.dto.DroneStatusResponse;
 import ro.developmentfactory.thedrones.repository.entity.Drone;
@@ -16,6 +18,7 @@ public class DroneStatusServiceImpl implements DroneStatusService {
 
     private final DroneStatusRepository droneStatusRepository;
     private final DroneRepository droneRepository;
+    private static final Logger logger = LoggerFactory.getLogger(DroneStatusServiceImpl.class);
 
     public DroneStatusServiceImpl(DroneStatusRepository droneStatusRepository, DroneRepository droneRepository) {
         this.droneStatusRepository = droneStatusRepository;
@@ -25,14 +28,21 @@ public class DroneStatusServiceImpl implements DroneStatusService {
     // Read
     @Override
     public DroneStatusResponse fetchDroneStatus(UUID idDrone) {
+        logger.debug("Fetching drone with ID: {}",idDrone);
         Drone drone = droneRepository.findById(idDrone)
-                .orElseThrow(() -> new IllegalArgumentException("Drone not found for this ID"));
+                .orElseThrow(() ->{
+                    logger.error("Drone not fount for ID: {}",idDrone);
+                    return new EntityNotFoundException("Drone not found for this ID");
 
+                });
+        logger.debug("Drone found : {}",drone);
         if (drone.getDroneStatusList() == null || drone.getDroneStatusList().isEmpty()) {
-            throw new IllegalArgumentException("No DroneStatus found for this Drone");
+           logger.error("No DroneStatus found for this ID: {}",idDrone);
+            throw new EntityNotFoundException("No DroneStatus found for this Drone");
         }
 
         DroneStatus droneStatus = drone.getDroneStatusList().getFirst();
+        logger.debug("DroneStatus found : {}",droneStatus);
 
         return convertToResponse(droneStatus);
     }

@@ -1,6 +1,7 @@
 package ro.developmentfactory.thedrones.controller;
 
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ro.developmentfactory.thedrones.controller.dto.DroneRequest;
 import ro.developmentfactory.thedrones.controller.dto.DroneResponse;
@@ -48,8 +49,8 @@ public class DroneController {
 
 
     @DeleteMapping("/{id}")
-    public String deleteDroneById(@PathVariable ("id") UUID idDrone){
+    public ResponseEntity<Void> deleteDroneById(@PathVariable ("id") UUID idDrone){
         droneService.deleteDrone(idDrone);
-        return "Drone deleted";
+        return ResponseEntity.accepted().build();
     }
 }

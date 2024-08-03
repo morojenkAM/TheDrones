@@ -1,5 +1,6 @@
 package ro.developmentfactory.thedrones.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -74,8 +75,8 @@ class DronesStatusServiceImplTest {
         when(droneStatusRepository.findById(droneId)).thenReturn(Optional.empty());
 
         // When & Then
-        IllegalArgumentException thrown = assertThrows(
-                IllegalArgumentException.class,
+        EntityNotFoundException thrown = assertThrows(
+                EntityNotFoundException.class,
                 () -> droneStatusService.fetchDroneStatus(droneId),
                 "Expected fetchDroneStatus() to throw IllegalArgumentException"
         );
@@ -171,8 +172,8 @@ class DronesStatusServiceImplTest {
         when(droneStatusRepository.findById(droneId)).thenReturn(Optional.empty());
 
         // When & Then
-        IllegalArgumentException thrown = assertThrows(
-                IllegalArgumentException.class,
+        EntityNotFoundException thrown = assertThrows(
+                EntityNotFoundException.class,
                 () -> droneStatusService.fetchDroneStatus(droneId),
                 "Expected fetchDroneStatus() to throw IllegalArgumentException"
         );

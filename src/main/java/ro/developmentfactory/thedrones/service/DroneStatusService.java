@@ -12,4 +12,5 @@ public interface DroneStatusService {
     void saveDroneStatus(DroneStatus droneStatus);
 
     void deleteDroneStatus(UUID idDroneStatus);
+
 }
