@@ -1,0 +1,24 @@
+POST
+http://localhost:8081/drones
+
+JSON
+{
+  "name": "Drone4",
+  "countMove": 10
+}
+
+GET
+http://localhost:8081/drones
+
+GET
+http://localhost:8081/drones/status/{id}
+
+PUT
+http://localhost:8081/drones/drone/31000000-0000-0000-0000-000000000000
+
+JSON
+{
+  "name": "UpdatedDroneName1"
+}
+
+
