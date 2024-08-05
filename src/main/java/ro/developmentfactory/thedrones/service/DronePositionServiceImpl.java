@@ -1,6 +1,8 @@
 package ro.developmentfactory.thedrones.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ro.developmentfactory.thedrones.controller.dto.DroneStatusResponse;
@@ -16,6 +18,7 @@ public class DronePositionServiceImpl implements DronePositionService {
 
     private final DroneStatusRepository droneStatusRepository;
     private final DroneRepository droneRepository;
+    private static final Logger log = LoggerFactory.getLogger(DronePositionServiceImpl.class);
 
     public DronePositionServiceImpl(DroneStatusRepository droneStatusRepository, DroneRepository droneRepository) {
         this.droneStatusRepository = droneStatusRepository;
@@ -25,7 +28,9 @@ public class DronePositionServiceImpl implements DronePositionService {
     @Override
     @Transactional
     public DroneStatusResponse turnDroneLeft(DroneStatusResponse droneStatusResponse) {
+        log.debug("Turning drone left :{}",droneStatusResponse);
         UUID idDrone = droneStatusResponse.getIdDrone();
+
         Drone drone = droneRepository.findById(idDrone)
                 .orElseThrow(() -> new EntityNotFoundException("Drone with id " + idDrone + " not found"));
 
@@ -33,12 +38,13 @@ public class DronePositionServiceImpl implements DronePositionService {
         currentStatus.setFacingDirection(currentStatus.getFacingDirection().turnLeft());
 
         droneStatusRepository.save(currentStatus);
-        return convertToResponse(currentStatus);
+       return convertToResponse(currentStatus);
     }
 
     @Override
     @Transactional
     public DroneStatusResponse turnDroneRight(DroneStatusResponse droneStatusResponse) {
+        log.debug("Turning drone right :{}",droneStatusResponse);
         UUID idDrone = droneStatusResponse.getIdDrone();
 
         Drone drone = droneRepository.findById(idDrone)
@@ -54,6 +60,8 @@ public class DronePositionServiceImpl implements DronePositionService {
     @Override
     @Transactional
     public DroneStatusResponse moveForward(DroneStatusResponse droneStatusResponse) {
+        log.debug("Moving forward for drone status :{}",droneStatusResponse);
+
         DroneStatus droneStatus = droneStatusRepository.findById(droneStatusResponse.getIdDroneStatus())
                 .orElseThrow(() -> new EntityNotFoundException("Drone status with id " + droneStatusResponse.getIdDroneStatus() + " not found"));
 
@@ -76,14 +84,17 @@ public class DronePositionServiceImpl implements DronePositionService {
         }
 
         if (newX < 0 || newX >= 10 || newY < 0 || newY >= 10) {
+            log.error("Drone cannot move because it’s at the edge of the field. Current position: ({}, {}), New position: ({}, {})", droneStatus.getCurrentPositionX(), droneStatus.getCurrentPositionY(), newX, newY);
             throw new IllegalArgumentException("Drone cannot move because it’s at the edge of the field");
         }
-
+        log.debug("New position for drone: ({}, {})", newX, newY);
         droneStatus.setCurrentPositionX(newX);
         droneStatus.setCurrentPositionY(newY);
         droneStatus.getDrone().setCountMove(droneStatus.getDrone().getCountMove() + 1);
 
         droneStatusRepository.save(droneStatus);
+        log.debug("Drone status updated successfully: {}", droneStatus);
+
         return convertToResponse(droneStatus);
     }
 
@@ -99,6 +110,7 @@ public class DronePositionServiceImpl implements DronePositionService {
         response.setCurrentPositionY(droneStatus.getCurrentPositionY());
         response.setFacingDirection(droneStatus.getFacingDirection());
 
+        log.debug("Converted drone status to response: {}", response);
         return response;
     }
 }
