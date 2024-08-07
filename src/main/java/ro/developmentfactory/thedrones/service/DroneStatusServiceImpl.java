@@ -36,12 +36,13 @@ public class DroneStatusServiceImpl implements DroneStatusService {
 
                 });
         logger.debug("Drone found : {}",drone);
-        if (drone.getDroneStatusList() == null || drone.getDroneStatusList().isEmpty()) {
-           logger.error("No DroneStatus found for this ID: {}",idDrone);
+        DroneStatus droneStatus = drone.getDroneStatus();
+
+        if (droneStatus == null) {
+            logger.error("No DroneStatus found for this ID: {}", idDrone);
             throw new EntityNotFoundException("No DroneStatus found for this Drone");
         }
 
-        DroneStatus droneStatus = drone.getDroneStatusList().getFirst();
         logger.debug("DroneStatus found : {}",droneStatus);
 
         return convertToResponse(droneStatus);
