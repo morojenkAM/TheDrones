@@ -15,7 +15,6 @@ import ro.developmentfactory.thedrones.repository.DroneRepository;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -87,13 +86,12 @@ public class DroneServiceImpl implements DroneService {
         Drone drone = droneRepository.findById(idDrone)
                 .orElseThrow(() -> new EntityNotFoundException("Drone with id " + idDrone + " not found"));
 
-        List<DroneStatus> droneStatusList = drone.getDroneStatusList();
-        if (droneStatusList == null) {
-            droneStatusList = Collections.emptyList();
-        }
-        for (DroneStatus droneStatus : droneStatusList) {
+        DroneStatus droneStatus = drone.getDroneStatus();
+        if (droneStatus != null) {
             droneStatusService.deleteDroneStatus(droneStatus.getIdDroneStatus());
+
         }
+
 
         droneRepository.deleteById(idDrone);
         log.info("Drone with ID: {} deleted", idDrone);
